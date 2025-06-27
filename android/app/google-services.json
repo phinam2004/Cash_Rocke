@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1028684248689",
+    "project_id": "dkpn-9eb61",
+    "storage_bucket": "dkpn-9eb61.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1028684248689:android:9c1bc4d5bc9fa07eb60dd0",
+        "android_client_info": {
+          "package_name": "com.phinam.dkpn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfxnxlmkbNIiFHJLSF5jmM9Uxhb-XtfS0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
