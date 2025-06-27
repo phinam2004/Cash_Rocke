@@ -24,17 +24,15 @@ class LogIn extends StatefulWidget {
 
 class _LogInState extends State<LogIn> {
   bool isChecked = true;
-  TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
 
   Future<void> checkInternet() async {
-    // bool result = await InternetConnectionChecker().hasConnection;
     bool result = await InternetConnection().hasInternetAccess;
     if (!result && mounted) {
       NoInternetScreen(screenName: widget).launch(context);
     }
   }
-
-  String selectedCode = "+880";
 
   @override
   void initState() {
@@ -68,78 +66,63 @@ class _LogInState extends State<LogIn> {
                   ),
                   Text(
                     appsName,
-                    style: kTextStyle.copyWith(color: kWhite, fontWeight: FontWeight.bold),
+                    style: kTextStyle.copyWith(
+                        color: kWhite, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 40.0),
                   AppTextField(
                     textStyle: kTextStyle.copyWith(color: kWhite),
                     showCursor: true,
-                    textFieldType: TextFieldType.PHONE,
-                    controller: phoneController,
+                    textFieldType: TextFieldType.EMAIL,
+                    controller: emailController,
                     decoration: kInputDecoration.copyWith(
-                      hintText: "17xx-xxxxxx",
+                      hintText: "Email",
                       hintStyle: kTextStyle.copyWith(color: lightGreyTextColor),
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      prefixIcon: CountryCodePicker(
-                        textStyle: kTextStyle.copyWith(color: kWhite),
-                        onChanged: (country) {
-                          setState(() {
-                            selectedCode = country.dialCode ?? "+880";
-                          });
-                        },
-                        initialSelection: 'BD',
-                        showCountryOnly: false,
-                        showFlag: true,
-                        showOnlyCountryWhenClosed: false,
-                        alignLeft: false,
-                      ),
+                      prefixIcon: Icon(Icons.email, color: kWhite),
+                    ),
+                  ),
+                  const SizedBox(height: 10.0),
+                  AppTextField(
+                    textStyle: kTextStyle.copyWith(color: kWhite),
+                    showCursor: true,
+                    textFieldType: TextFieldType.PASSWORD,
+                    controller: passwordController,
+                    decoration: kInputDecoration.copyWith(
+                      hintText: "Mật khẩu",
+                      hintStyle: kTextStyle.copyWith(color: lightGreyTextColor),
+                      floatingLabelBehavior: FloatingLabelBehavior.never,
+                      prefixIcon: Icon(Icons.lock, color: kWhite),
                     ),
                   ),
                   const SizedBox(height: 20.0),
                   ButtonGlobal(
-                      buttontext: lang.S.of(context).sendOtp,
-                      buttonDecoration: kButtonDecoration,
-                      onPressed: () async {
-                        //EasyLoading.show(status: "Sending OTP");
-                        EasyLoading.show(status: lang.S.of(context).sendingOtp);
-                        await FirebaseAuth.instance.verifyPhoneNumber(
-                          phoneNumber: selectedCode + phoneController.text,
-                          verificationCompleted: (PhoneAuthCredential credential) async {
-                            try {
-                              var user = await FirebaseAuth.instance.signInWithCredential(credential);
-                              if (user.user == null) {
-                                //EasyLoading.showError("Invalid OTP");
-                                EasyLoading.showError(lang.S.of(context).invalidOTP);
-                              } else {
-                                await AuthRepo().signInWithPhone(phoneController.text, context);
-                              }
-                            } catch (e) {
-                              //toast("Invalid OTP");
-                              toast(lang.S.of(context).invalidOTP);
-                            }
-                          },
-                          verificationFailed: (FirebaseAuthException e) {
-                           // EasyLoading.showError(e.message ?? "Error Occurred");
-                            EasyLoading.showError(e.message ?? lang.S.of(context).errorOccurred);
-                          },
-                          codeSent: (String verificationId, int? resendToken) {
-                            //EasyLoading.showSuccess("OTP Sent");
-                            EasyLoading.showSuccess(lang.S.of(context).oTPSent);
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (_) => MobileVerification(
-                                          mobile: selectedCode + phoneController.text,
-                                          id: verificationId,
-                                          resendId: resendToken ?? 0,
-                                        )));
-                          },
-                          codeAutoRetrievalTimeout: (String verificationId) {
-                            //EasyLoading.showError("Try Again");
-                            EasyLoading.showError(lang.S.of(context).tryAgain);
-                          },
+                    buttontext: 'Đăng nhập',
+                    buttonDecoration: kButtonDecoration,
+                    onPressed: () async {
+                      if (emailController.text.isEmpty ||
+                          passwordController.text.isEmpty) {
+                        EasyLoading.showInfo('Vui lòng nhập email và mật khẩu');
+                        return;
+                      }
+                      try {
+                        EasyLoading.show(status: 'Đang đăng nhập...');
+                        UserCredential userCredential = await FirebaseAuth
+                            .instance
+                            .signInWithEmailAndPassword(
+                          email: emailController.text.trim(),
+                          password: passwordController.text.trim(),
                         );
-                      }),
+                        // Đăng nhập thành công, chuyển vào trang chủ
+                        Navigator.pushReplacementNamed(
+                            context, '/'); // hoặc const Home().launch(context);
+                        EasyLoading.dismiss();
+                      } on FirebaseAuthException catch (e) {
+                        EasyLoading.showError(
+                            e.message ?? 'Đăng nhập thất bại');
+                      }
+                    },
+                  ),
                 ],
               ),
             ),
